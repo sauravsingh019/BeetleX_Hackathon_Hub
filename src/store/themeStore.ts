@@ -11,6 +11,7 @@ interface ThemeState {
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('light', theme === 'light')
+  document.documentElement.setAttribute('data-theme', theme)
 }
 
 export const useThemeStore = create<ThemeState>()(

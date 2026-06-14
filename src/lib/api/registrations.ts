@@ -18,9 +18,19 @@ export interface CreateRegistrationInput {
   trackPreference: string
 }
 
+export interface RegistrationCheckResult {
+  exists: boolean
+  registrationId?: string
+}
+
+export interface RegistrationConflictError {
+  message: string
+  registrationId: string
+}
+
 export function checkRegistration(email: string, eventId: string) {
   const params = new URLSearchParams({ email, eventId })
-  return apiClient<{ exists: boolean }>(`/api/registrations/check?${params}`)
+  return apiClient<RegistrationCheckResult>(`/api/registrations/check?${params}`)
 }
 
 export function createRegistration(data: CreateRegistrationInput) {

@@ -4,8 +4,12 @@ import type { Announcement, Score, Submission, Team } from '@/types'
 import {
   announcements,
   events,
+  findSubmissionById,
   judgeAssignments,
+  judgeSubmissionAssignments,
   leaderboard,
+  listAllSubmissions,
+  mockJudges,
   organizerStats,
   registrations,
   scores,
@@ -21,6 +25,11 @@ const delay = () =>
 
 function jsonResponse(data: JsonBodyType, status = 200) {
   return HttpResponse.json(data, { status })
+}
+
+function generateRegistrationId(): string {
+  const seq = 500 + registrations.length
+  return `BTLX-2026-${String(seq).padStart(5, '0')}`
 }
 
 export const handlers = [
@@ -54,11 +63,22 @@ export const handlers = [
       (r) => r.email === body.email && r.eventId === body.eventId,
     )
     if (exists) {
-      return jsonResponse({ message: 'Registration already exists for this email and event' }, 409)
+      const existing = registrations.find(
+        (r) => r.email === body.email && r.eventId === body.eventId,
+      )!
+      return jsonResponse(
+        {
+          message: 'Registration already exists for this email and event',
+          registrationId: existing.id,
+        },
+        409,
+      )
     }
     const registration: Registration = {
       ...body,
-      id: `reg-${Date.now()}`,
+      id: generateRegistrationId(),
+      teamName: '—',
+      status: 'pending',
       createdAt: new Date().toISOString(),
     }
     registrations.push(registration)
@@ -70,8 +90,37 @@ export const handlers = [
     const url = new URL(request.url)
     const email = url.searchParams.get('email') ?? ''
     const eventId = url.searchParams.get('eventId') ?? ''
-    const exists = registrations.some((r) => r.email === email && r.eventId === eventId)
-    return jsonResponse({ exists })
+    const existing = registrations.find((r) => r.email === email && r.eventId === eventId)
+    return jsonResponse({
+      exists: Boolean(existing),
+      registrationId: existing?.id,
+    })
+  }),
+
+  http.get('/api/teams/validate-invite', async ({ request }) => {
+    await delay()
+    const url = new URL(request.url)
+    const code = url.searchParams.get('code') ?? ''
+    const eventId = url.searchParams.get('eventId') ?? ''
+    const team = teams.find((t) => t.inviteCode === code && t.eventId === eventId)
+    if (!team) {
+      return jsonResponse({ valid: false as const })
+    }
+    return jsonResponse({ valid: true as const, teamName: team.name, teamId: team.id })
+  }),
+
+  http.get('/api/teams/lookup', async ({ request }) => {
+    await delay()
+    const url = new URL(request.url)
+    const email = url.searchParams.get('email') ?? ''
+    const eventId = url.searchParams.get('eventId') ?? ''
+    const team = teams.find(
+      (t) => t.eventId === eventId && t.members.some((m) => m.email === email),
+    )
+    if (!team) {
+      return jsonResponse({ message: 'Team not found for this participant' }, 404)
+    }
+    return jsonResponse(team)
   }),
 
   http.get('/api/teams/:id', async ({ params }) => {
@@ -191,6 +240,15 @@ export const handlers = [
     return jsonResponse(updated)
   }),
 
+  http.get('/api/submissions/:id', async ({ params }) => {
+    await delay()
+    const submission = findSubmissionById(params.id as string)
+    if (!submission) {
+      return jsonResponse({ message: 'Submission not found' }, 404)
+    }
+    return jsonResponse(submission)
+  }),
+
   http.get('/api/judge/assignments', async () => {
     await delay()
     return jsonResponse(judgeAssignments)
@@ -212,6 +270,14 @@ export const handlers = [
     return jsonResponse(score, 201)
   }),
 
+  http.get('/api/judge/scores', async ({ request }) => {
+    await delay()
+    const url = new URL(request.url)
+    const judgeId = url.searchParams.get('judgeId') ?? ''
+    const filtered = scores.filter((s) => s.judgeId === judgeId)
+    return jsonResponse(filtered)
+  }),
+
   http.get('/api/organizer/stats', async ({ request }) => {
     await delay()
     const url = new URL(request.url)
@@ -224,6 +290,7 @@ export const handlers = [
         submissionsDraft: 0,
         submissionsSubmitted: 0,
         announcementsCount: 0,
+        activeJudges: 0,
       })
     }
     return jsonResponse(organizerStats)
@@ -234,6 +301,51 @@ export const handlers = [
     const url = new URL(request.url)
     const eventId = url.searchParams.get('eventId') ?? ''
     const filtered = registrations.filter((r) => r.eventId === eventId)
-    return jsonResponse(filtered)
+    const trackMap = Object.fromEntries(
+      (events.find((e) => e.id === eventId)?.tracks ?? []).map((t) => [t.id, t.name]),
+    )
+    const rows = filtered.map((r) => ({
+      ...r,
+      trackName: trackMap[r.trackPreference] ?? r.trackPreference,
+    }))
+    return jsonResponse(rows)
+  }),
+
+  http.get('/api/organizer/submissions', async ({ request }) => {
+    await delay()
+    const url = new URL(request.url)
+    const eventId = url.searchParams.get('eventId') ?? ''
+    const all = listAllSubmissions().filter((s) => {
+      const team = teams.find((t) => t.id === s.teamId)
+      return team ? team.eventId === eventId : eventId === organizerStats.eventId
+    })
+    const rows = all.map((s) => ({
+      id: s.id,
+      teamName: s.teamName,
+      title: s.title,
+      status: s.status,
+      submittedAt: s.submittedAt,
+      updatedAt: s.updatedAt,
+    }))
+    return jsonResponse(rows)
+  }),
+
+  http.get('/api/organizer/judges', async () => {
+    await delay()
+    return jsonResponse(mockJudges)
+  }),
+
+  http.get('/api/organizer/assignments', async () => {
+    await delay()
+    return jsonResponse(judgeSubmissionAssignments)
+  }),
+
+  http.put('/api/organizer/assignments', async ({ request }) => {
+    await delay()
+    const body = (await request.json()) as { assignments: { submissionId: string; judgeId: string }[] }
+    for (const { submissionId, judgeId } of body.assignments) {
+      judgeSubmissionAssignments[submissionId] = judgeId
+    }
+    return jsonResponse({ saved: true })
   }),
 ]

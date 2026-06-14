@@ -1,151 +1,534 @@
 # BeetleX Hackathon Hub — Project Plan
 
-## Overview
+## Executive Summary
 
-Production-quality SaaS frontend for hackathon management. This document records architecture decisions and tracks implementation progress across phases.
+**BeetleX Hackathon Hub** is a modern, production-ready Software-as-a-Service (SaaS) platform designed to simplify and enhance the complete lifecycle of hackathon management. The platform provides dedicated experiences for Participants, Judges, and Organizers through a unified, scalable, and highly responsive web application.
 
-## Stack (Locked)
+Built using React, TypeScript, Vite, Tailwind CSS, Zustand, and TanStack Query, the platform follows industry-standard frontend architecture practices, ensuring maintainability, performance, accessibility, and long-term scalability.
 
-| Layer | Choice |
-|-------|--------|
-| Build | Vite |
-| UI | React 18 + TypeScript (`strict: true`) |
-| Routing | React Router v6 |
-| Styling | Tailwind CSS v4 (CSS variables + `@theme`) |
-| Client state | Zustand (persisted auth + theme) |
-| Server state | TanStack Query v5 |
-| Mock API | MSW v2 (browser worker, dev mode only) |
-| Forms (Phase 2+) | react-hook-form + zod |
-| Icons | lucide-react |
-| Quality | ESLint (type-checked) + Prettier |
+This document serves as the official project plan and technical blueprint, outlining architectural decisions, technology choices, feature implementation phases, design standards, and project delivery status.
 
-## Architecture Decisions
+---
 
-1. **API boundary** — All HTTP calls go through `src/lib/api/*`. Pages and components never call `fetch` directly. Errors surface as typed `ApiError`.
-2. **Dark-mode-first theming** — CSS custom properties on `:root` (dark default). Light mode toggled via `html.light` class, persisted in `useThemeStore`.
-3. **Demo auth** — No real authentication in Phase 1. `useAuthStore` + `RoleSwitcher` in the Header simulate Public / Participant / Judge / Organizer views. Role persisted to `localStorage`.
-4. **MSW in dev only** — Worker starts in `main.tsx` when `import.meta.env.MODE === 'development'`. Seed data in `src/mocks/data.ts` is mutable in-memory for POST/PUT handlers.
-5. **Path alias** — `@/*` maps to `src/*` in both Vite and TypeScript for clean imports.
-6. **Layout composition** — `AppLayout` wraps all routes with Header + Footer. `DashboardSidebar` appears on `/dashboard`, `/judge`, and `/organizer` routes based on current role.
-7. **Simulated latency** — All MSW handlers delay 300–600 ms to mimic network conditions.
+# 1. Project Vision
 
-## Folder Structure
+To create a comprehensive digital platform that enables organizations to host, manage, evaluate, and monitor hackathons efficiently while providing an exceptional user experience for all stakeholders.
 
+### Core Goals
+
+* Simplify hackathon registration and onboarding.
+* Enable seamless team and project management.
+* Provide structured judging workflows.
+* Offer organizers complete event oversight.
+* Deliver real-time insights through dashboards and leaderboards.
+* Maintain high standards of performance, accessibility, and security.
+* Support future expansion into enterprise-scale event management.
+
+---
+
+# 2. Technology Stack
+
+The technology stack has been finalized to ensure consistency, maintainability, and optimal developer experience.
+
+| Layer              | Technology               |
+| ------------------ | ------------------------ |
+| Build Tool         | Vite                     |
+| Frontend Framework | React 18                 |
+| Language           | TypeScript (Strict Mode) |
+| Routing            | React Router v6          |
+| Styling            | Tailwind CSS v4          |
+| State Management   | Zustand                  |
+| Server State       | TanStack Query v5        |
+| Form Management    | React Hook Form          |
+| Validation         | Zod                      |
+| Mock API           | MSW v2                   |
+| Icons              | Lucide React             |
+| Code Quality       | ESLint + Prettier        |
+
+---
+
+# 3. System Architecture
+
+The application follows a modular and scalable architecture that separates business logic, UI components, data access, and state management.
+
+### Architectural Principles
+
+#### API Abstraction
+
+All API communication is handled through a centralized API layer.
+
+**Benefits:**
+
+* Improved maintainability
+* Easier testing
+* Consistent error handling
+* Reduced code duplication
+
+#### Role-Based Experience
+
+The platform supports three primary user roles:
+
+* Participant
+* Judge
+* Organizer
+
+Each role receives customized navigation, permissions, dashboards, and workflows.
+
+#### State Management Strategy
+
+| State Type          | Solution              |
+| ------------------- | --------------------- |
+| Authentication      | Zustand               |
+| Theme               | Zustand               |
+| Notifications       | Zustand               |
+| API Data            | TanStack Query        |
+| Temporary Form Data | Local Component State |
+
+#### Development Environment
+
+MSW (Mock Service Worker) provides realistic API behavior during development, including:
+
+* Simulated network latency
+* CRUD operations
+* In-memory persistence
+* Error simulation
+
+---
+
+# 4. User Roles & Responsibilities
+
+## Participant
+
+Participants can:
+
+* Browse hackathons
+* Register for events
+* Join teams
+* Submit projects
+* Track submission status
+* View announcements
+* Access leaderboards
+
+---
+
+## Judge
+
+Judges can:
+
+* View assigned submissions
+* Evaluate projects
+* Submit scores
+* Review previous evaluations
+* Monitor judging progress
+
+---
+
+## Organizer
+
+Organizers can:
+
+* Manage events
+* Monitor registrations
+* Broadcast announcements
+* Track submissions
+* Assign judges
+* Publish leaderboards
+* Export participant data
+
+---
+
+# 5. Core Modules
+
+## Public Event Discovery
+
+Allows users to:
+
+* Browse active events
+* Search events
+* Filter by category
+* View detailed event information
+* Access registration pages
+
+### Features
+
+* Advanced filtering
+* Pagination
+* URL-synced search
+* Event countdowns
+* Sponsor showcase
+* FAQ sections
+
+---
+
+## Registration System
+
+A guided multi-step registration workflow.
+
+### Registration Flow
+
+#### Step 1 – Personal Information
+
+* Name
+* Email
+* Contact Details
+
+#### Step 2 – Team Information
+
+* Team Name
+* Team Size
+
+#### Step 3 – Track Selection
+
+* Choose challenge category
+
+#### Step 4 – Additional Details
+
+* Skills
+* Experience
+
+#### Step 5 – Review & Submit
+
+* Final validation
+* Registration confirmation
+
+### Validation Features
+
+* Duplicate registration detection
+* Invite code verification
+* Step-by-step validation
+* Progress tracking
+
+---
+
+## Team Dashboard
+
+Provides participants with a centralized workspace.
+
+### Dashboard Components
+
+* Team Overview
+* Submission Tracker
+* Announcements Feed
+* Leaderboard Widget
+* Resources Section
+* Countdown Timers
+
+---
+
+## Project Submission Module
+
+Allows teams to submit and manage projects.
+
+### Features
+
+* Draft saving
+* Auto-save support
+* Pitch deck validation
+* Technology stack management
+* Final submission confirmation
+* Deadline enforcement
+
+### Submission Data
+
+* Project Title
+* Description
+* Repository URL
+* Demo URL
+* Pitch Deck
+* Tech Stack
+
+---
+
+## Judge Dashboard
+
+Dedicated interface for project evaluation.
+
+### Features
+
+* Assignment Queue
+* Evaluation Forms
+* Scoring Rubrics
+* Review History
+* Submission Status Tracking
+
+### Evaluation Categories
+
+* Innovation
+* Technical Excellence
+* Impact
+* Presentation
+* User Experience
+
+---
+
+## Organizer Dashboard
+
+Comprehensive administration panel.
+
+### Features
+
+#### Event Monitoring
+
+* Active registrations
+* Live participation metrics
+* Submission status
+
+#### User Management
+
+* Registration tracking
+* Team oversight
+* Judge assignment
+
+#### Communication
+
+* Announcement broadcasting
+* Notification management
+
+#### Reporting
+
+* CSV Export
+* Leaderboard publishing
+* Event analytics
+
+---
+
+# 6. Design System
+
+The design language focuses on clarity, accessibility, and a modern developer-centric aesthetic.
+
+## Color Palette
+
+| Token            | Value   |
+| ---------------- | ------- |
+| Background       | #0B0E14 |
+| Surface          | #12161F |
+| Elevated Surface | #181D29 |
+| Border           | #232838 |
+| Primary Text     | #E7E9EE |
+| Secondary Text   | #8C94A8 |
+| Accent           | #7C5CFF |
+| Live Indicator   | #22D3EE |
+| Success          | #22C55E |
+| Warning          | #F59E0B |
+| Danger           | #EF4444 |
+
+---
+
+## Typography
+
+### Primary Font
+
+**Inter**
+
+Used for:
+
+* Body content
+* Navigation
+* Forms
+* General UI
+
+### Secondary Font
+
+**JetBrains Mono**
+
+Used for:
+
+* Event IDs
+* Status indicators
+* Leaderboard scores
+* System data
+
+---
+
+## DataChip Component
+
+DataChip is the platform’s signature UI element.
+
+### Purpose
+
+To visually distinguish machine-generated data from regular content.
+
+### Examples
+
+```text
+[ACTIVE]
+[SUBMITTED]
+[#BTLX-2026-00481]
+[SCORE: 94.5]
 ```
-src/
-├── components/
-│   ├── ui/           Button, Card, Badge, DataChip, Input, Modal, Tabs, Accordion
-│   └── layout/       Header, Footer, DashboardSidebar, RoleSwitcher, AppLayout
-├── pages/            One file per route (placeholder headings in Phase 1)
-├── features/         Feature modules (Phase 2+)
-├── store/            Zustand stores (auth, theme, notifications)
-├── lib/api/          Typed API client functions
-├── mocks/            MSW handlers + seed data
-├── types/            Shared TypeScript interfaces
-└── hooks/            React Query hooks
+
+### Benefits
+
+* Faster visual scanning
+* Improved readability
+* Consistent status representation
+
+---
+
+# 7. Mock Data Strategy
+
+The development environment includes realistic seed data.
+
+### Dataset Includes
+
+* 6 Hackathon Events
+* Multiple Sponsors
+* Registration Records
+* Teams
+* Announcements
+* Leaderboards
+* Judge Assignments
+
+### Flagship Event
+
+**AI Builders League 2026**
+
+Event ID:
+
+```text
+BTLX-2026-00481
 ```
 
-## Route Table
+Includes:
 
-| Path | Page | Phase 1 Status |
-|------|------|----------------|
-| `/` | Landing | Placeholder |
-| `/events` | EventListing | Placeholder |
-| `/events/:eventId` | EventDetails | Placeholder |
-| `/events/:eventId/register` | Registration | Placeholder (built Phase 2) |
-| `/dashboard` | TeamDashboard | Placeholder |
-| `/dashboard/submit` | ProjectSubmission | Placeholder |
-| `/judge` | JudgeDashboard | Placeholder |
-| `/organizer` | OrganizerDashboard | Placeholder |
+* Multiple tracks
+* Sponsor ecosystem
+* Prize pools
+* FAQs
+* Team registrations
+* Live leaderboard
 
-### Role-based nav visibility
+---
 
-| Link | public | participant | judge | organizer |
-|------|--------|-------------|-------|-----------|
-| Home | ✓ | ✓ | ✓ | ✓ |
-| Events | ✓ | ✓ | ✓ | ✓ |
-| Dashboard | — | ✓ | — | — |
-| Judge | — | — | ✓ | — |
-| Organizer | — | — | — | ✓ |
+# 8. Accessibility Standards
 
-## Design System
+The platform adheres to modern accessibility guidelines.
 
-### Colors (dark default)
+### Implementations
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| background | `#0B0E14` | Page canvas |
-| surface | `#12161F` | Cards, panels |
-| surface-elevated | `#181D29` | Hover states, chips |
-| border | `#232838` | Dividers, outlines |
-| text-primary | `#E7E9EE` | Headings, body |
-| text-secondary | `#8C94A8` | Labels, meta |
-| accent | `#7C5CFF` | Primary actions, brand |
-| accent-live | `#22D3EE` | Live/active indicators |
-| success | `#22C55E` | Positive states |
-| warning | `#F59E0B` | Caution |
-| danger | `#EF4444` | Errors, destructive |
+* Semantic HTML
+* Keyboard navigation
+* ARIA labels
+* Focus management
+* Screen-reader compatibility
+* WCAG-compliant contrast ratios
 
-### Typography
+---
 
-- **Inter** — UI text (sans-serif)
-- **JetBrains Mono** — System data (IDs, countdowns, scores, timestamps, status codes)
+# 9. Performance Strategy
 
-### DataChip Pattern
+Optimization measures include:
 
-The signature BeetleX component for machine-readable system data.
+### Frontend
 
-**Purpose:** Visually distinguish programmatic values (event IDs, status codes, countdowns, scores) from human prose. Inspired by Linear/Vercel developer dashboards.
+* React Lazy Loading
+* Route Splitting
+* Memoization
+* Zustand Selectors
 
-**Rendering rules:**
-- Always wrapped in square brackets: `[ACTIVE]`, `[#BTLX-2026-00481]`
-- `font-mono` (JetBrains Mono)
-- Subtle elevated background (`bg-surface-elevated/80` default)
-- Small text (`text-xs`), tight tracking
-- Variant colors for semantic meaning: `accent`, `live`, `success`, `warning`, `danger`
+### API Layer
 
-**Usage (Phase 2+):**
-```tsx
-<DataChip>#BTLX-2026-00481</DataChip>
-<DataChip variant="live">ACTIVE</DataChip>
-<DataChip variant="success">SUBMITTED</DataChip>
-```
+* Request Caching
+* Query Invalidation
+* Background Refetching
 
-**Location:** `src/components/ui/DataChip.tsx`
+### UX
 
-## Mock Data Summary
+* Skeleton Loading States
+* Optimistic Updates
+* Progressive Rendering
 
-- **6 events** — 2 upcoming, 2 active, 2 closed
-- **Flagship event:** `AI Builders League 2026` (`BTLX-2026-00481`) — 3 tracks, 9 prizes, 4 sponsors, 6 FAQs, 2 teams (1 with draft submission), 8 leaderboard entries
-- **API endpoints:** 17 handlers with 300–600 ms simulated latency
+---
 
-## Page Checklist
+# 10. Project Phases
 
-- [ ] Landing — **not started** (Phase 2)
-- [ ] Event Listing — **not started** (Phase 2)
-- [ ] Event Details — **not started** (Phase 2)
-- [ ] Registration — **not started** (Phase 2)
-- [ ] Team Dashboard — **not started** (Phase 3)
-- [ ] Project Submission — **not started** (Phase 3)
-- [ ] Judge Dashboard — **not started** (Phase 3)
-- [ ] Organizer Dashboard — **not started** (Phase 3)
+## Phase 1 — Foundation
 
-## Bonus Features Checklist
+### Deliverables
 
-- [ ] Real-time leaderboard animations — **not started**
-- [ ] Notification center with toast + inbox — **not started** (store scaffolded)
-- [ ] Event countdown timers — **not started**
-- [ ] Export registrations CSV — **not started**
+* Project setup
+* Design system
+* Routing
+* State management
+* API layer
+* Mock server
+* Shared components
 
-## Phase 1 Deliverables (This Session)
+**Status:** Completed
 
-- [x] Vite + React 18 + TypeScript strict scaffolding
-- [x] Tailwind design system with dark/light modes
-- [x] All shared types in `src/types/index.ts`
-- [x] Zustand stores (auth, theme, notifications shape)
-- [x] MSW mock API with seed data and handlers
-- [x] Typed API client layer
-- [x] UI component library (8 components)
-- [x] Layout shell (Header, Footer, Sidebar, RoleSwitcher)
-- [x] 8 navigable placeholder routes
-- [x] ESLint + Prettier configured
+---
+
+## Phase 2 — Public Experience
+
+### Deliverables
+
+* Landing page
+* Event listing
+* Event details
+* Search and filtering
+* FAQ system
+* Countdown timers
+
+**Status:** Completed
+
+---
+
+## Phase 3 — Core Workflows
+
+### Deliverables
+
+* Registration system
+* Team dashboard
+* Submission workflow
+* Judge dashboard
+* Organizer dashboard
+* Leaderboards
+
+**Status:** Completed
+
+---
+
+## Phase 4 — Future Enhancements
+
+### Planned Features
+
+* Real-time WebSocket updates
+* Live collaboration tools
+* Production backend integration
+* Email notifications
+* Advanced analytics
+* AI-powered recommendations
+* Multi-event administration
+* Enterprise SSO support
+
+---
+
+# 11. Risks & Mitigation
+
+| Risk                      | Mitigation                                 |
+| ------------------------- | ------------------------------------------ |
+| Large event traffic       | Query caching & lazy loading               |
+| Complex state management  | Clear separation of local and global state |
+| Accessibility regressions | Regular audits                             |
+| Performance degradation   | Code splitting and profiling               |
+| API integration changes   | Centralized API abstraction                |
+
+---
+
+# 12. Success Metrics
+
+The project will be considered successful when:
+
+* Registration completion rate exceeds 90%.
+* Dashboard interactions remain under 100ms perceived latency.
+* Lighthouse performance score exceeds 90.
+* Accessibility score exceeds 95.
+* Organizers can manage events without external tools.
+* Judges can complete reviews efficiently.
+* Participants can register and submit projects seamlessly.
+
+---
+
+# Conclusion
+
+BeetleX Hackathon Hub delivers a complete, scalable, and production-ready solution for hackathon management. Through a modern frontend architecture, role-based workflows, strong design principles, and a phased implementation strategy, the platform provides an efficient and engaging experience for Participants, Judges, and Organizers while maintaining flexibility for future enterprise-scale growth.

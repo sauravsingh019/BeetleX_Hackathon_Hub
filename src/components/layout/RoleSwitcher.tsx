@@ -11,7 +11,8 @@ const roles: { value: UserRole; label: string }[] = [
 ]
 
 export function RoleSwitcher() {
-  const { role, setRole } = useAuthStore()
+  const role = useAuthStore((state) => state.role)
+  const setRole = useAuthStore((state) => state.setRole)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 

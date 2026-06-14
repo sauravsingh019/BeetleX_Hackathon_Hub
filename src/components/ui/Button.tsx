@@ -9,17 +9,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-accent text-white hover:brightness-110 shadow-sm shadow-accent/20',
+  primary: 'bg-accent text-white hover:brightness-110 hover:-translate-y-[1px] shadow-sm shadow-accent/20 border-none',
   secondary:
-    'bg-surface-elevated text-text-primary border border-border hover:border-accent/50',
+    'bg-transparent text-text-primary border border-[var(--border2)] hover:border-accent hover:text-accent hover:-translate-y-[1px]',
   ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated',
   danger: 'bg-danger/10 text-danger border border-danger/30 hover:bg-danger/20',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  md: 'px-[18px] py-[8px] text-[13px]',
+  lg: 'px-[28px] py-[12px] text-[15px]',
 }
 
 export function Button({

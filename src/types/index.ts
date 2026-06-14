@@ -118,3 +118,39 @@ export interface JudgeAssignment {
   teamName: string
   status: 'pending' | 'reviewed'
 }
+
+export interface SubmissionDetail extends Submission {
+  teamName: string
+}
+
+export interface OrganizerRegistrationRow {
+  id: string
+  eventId: string
+  name: string
+  email: string
+  college: string
+  trackPreference: string
+  teamName: string
+  trackName: string
+  status: 'confirmed' | 'pending' | 'waitlisted'
+  createdAt: string
+}
+
+export interface OrganizerSubmissionRow {
+  id: string
+  teamName: string
+  title: string
+  status: SubmissionStatus
+  submittedAt?: string
+  updatedAt: string
+}
+
+export interface MockJudge {
+  id: string
+  name: string
+}
+
+export interface JudgeAssignmentEntry {
+  submissionId: string
+  judgeId: string
+}

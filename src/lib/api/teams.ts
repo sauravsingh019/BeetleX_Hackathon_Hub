@@ -30,3 +30,19 @@ export function joinTeam(data: JoinTeamInput) {
     body: JSON.stringify(data),
   })
 }
+
+export interface InviteValidationResult {
+  valid: boolean
+  teamName?: string
+  teamId?: string
+}
+
+export function validateInviteCode(code: string, eventId: string) {
+  const params = new URLSearchParams({ code, eventId })
+  return apiClient<InviteValidationResult>(`/api/teams/validate-invite?${params}`)
+}
+
+export function lookupTeamByMember(email: string, eventId: string) {
+  const params = new URLSearchParams({ email, eventId })
+  return apiClient<Team>(`/api/teams/lookup?${params}`)
+}

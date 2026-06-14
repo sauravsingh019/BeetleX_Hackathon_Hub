@@ -3,7 +3,9 @@ import type {
   HackathonEvent,
   JudgeAssignment,
   LeaderboardEntry,
+  MockJudge,
   Score,
+  SubmissionDetail,
   Team,
 } from '@/types'
 
@@ -346,7 +348,85 @@ export const judgeAssignments: JudgeAssignment[] = [
   },
 ]
 
-export const scores: Score[] = []
+export const scores: Score[] = [
+  {
+    id: 'score-synthwave-001',
+    judgeId: 'judge-priya',
+    submissionId: 'sub-synthwave-002',
+    innovation: 8,
+    technical: 9,
+    impact: 7,
+    presentation: 8,
+    comments: 'Strong agent orchestration UX. Consider clearer error recovery paths.',
+    submittedAt: '2026-06-13T16:45:00Z',
+  },
+]
+
+export const mockJudges: MockJudge[] = [
+  { id: 'judge-priya', name: 'Dr. Priya Sharma' },
+  { id: 'judge-elena', name: 'Dr. Elena Martinez' },
+  { id: 'judge-james', name: 'James Okonkwo' },
+  { id: 'judge-sarah', name: 'Sarah Chen' },
+]
+
+/** Judge-to-submission assignments (mutable via PUT /api/organizer/assignments) */
+export const judgeSubmissionAssignments: Record<string, string> = {
+  'sub-neuronauts-001': 'judge-priya',
+  'sub-synthwave-002': 'judge-elena',
+  'sub-orbital-003': 'judge-james',
+}
+
+const extraSubmissions: SubmissionDetail[] = [
+  {
+    id: 'sub-synthwave-002',
+    teamId: 'team-synthwave',
+    teamName: 'SynthWave Labs',
+    title: 'AgentOps Canvas',
+    description:
+      'Visual workflow builder for multi-agent pipelines with built-in tracing, cost estimation, and rollback checkpoints.',
+    techStack: ['TypeScript', 'Next.js', 'LangChain', 'Redis'],
+    demoLink: 'https://agentops-demo.beetlex.dev',
+    repoLink: 'https://github.com/synthwave/agentops-canvas',
+    pitchDeckName: 'AgentOps_Pitch.pdf',
+    videoLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    status: 'submitted',
+    updatedAt: '2026-06-13T14:00:00Z',
+    submittedAt: '2026-06-13T14:00:00Z',
+  },
+  {
+    id: 'sub-orbital-003',
+    teamId: 'team-orbital',
+    teamName: 'Orbital Agents',
+    title: 'OrbitPlanner',
+    description:
+      'Autonomous task planner that decomposes product specs into executable agent missions with human-in-the-loop approval gates.',
+    techStack: ['Python', 'FastAPI', 'React', 'PostgreSQL'],
+    demoLink: 'https://orbitplanner.beetlex.dev',
+    repoLink: 'https://github.com/orbital-agents/orbitplanner',
+    pitchDeckName: 'OrbitPlanner_Deck.pdf',
+    status: 'submitted',
+    updatedAt: '2026-06-13T18:30:00Z',
+    submittedAt: '2026-06-13T18:30:00Z',
+  },
+]
+
+export function findSubmissionById(id: string): SubmissionDetail | undefined {
+  for (const team of teams) {
+    if (team.submission?.id === id) {
+      return { ...team.submission, teamName: team.name }
+    }
+  }
+  return extraSubmissions.find((s) => s.id === id)
+}
+
+export function listAllSubmissions(): SubmissionDetail[] {
+  const fromTeams = teams
+    .filter((t) => t.submission)
+    .map((t) => ({ ...t.submission!, teamName: t.name }))
+  const teamIds = new Set(fromTeams.map((s) => s.id))
+  const extras = extraSubmissions.filter((s) => !teamIds.has(s.id))
+  return [...fromTeams, ...extras]
+}
 
 export interface Registration {
   id: string
@@ -355,27 +435,66 @@ export interface Registration {
   email: string
   college: string
   trackPreference: string
+  teamName: string
+  status: 'confirmed' | 'pending' | 'waitlisted'
   createdAt: string
 }
 
 export const registrations: Registration[] = [
   {
-    id: 'reg-001',
+    id: 'BTLX-2026-00482',
     eventId: AI_BUILDERS_EVENT_ID,
     name: 'Taylor Kim',
     email: 'taylor.kim@university.edu',
     college: 'Northern Tech College',
     trackPreference: 'track-agentic',
+    teamName: '—',
+    status: 'pending',
     createdAt: '2026-05-20T11:00:00Z',
   },
   {
-    id: 'reg-002',
+    id: 'BTLX-2026-00483',
     eventId: AI_BUILDERS_EVENT_ID,
     name: 'Jordan Lee',
     email: 'jordan.lee@beetlex.dev',
     college: 'BeetleX HQ',
     trackPreference: 'track-genai',
+    teamName: '—',
+    status: 'confirmed',
     createdAt: '2026-05-18T09:15:00Z',
+  },
+  {
+    id: 'BTLX-2026-00484',
+    eventId: AI_BUILDERS_EVENT_ID,
+    name: 'Alex Chen',
+    email: 'alex.chen@university.edu',
+    college: 'State Institute of Technology',
+    trackPreference: 'track-genai',
+    teamName: 'NeuroNauts',
+    status: 'confirmed',
+    createdAt: '2026-05-15T08:00:00Z',
+  },
+  {
+    id: 'BTLX-2026-00485',
+    eventId: AI_BUILDERS_EVENT_ID,
+    name: 'Riya Patel',
+    email: 'riya.patel@university.edu',
+    college: 'Metro University',
+    trackPreference: 'track-web3ai',
+    teamName: 'ChainMind',
+    status: 'confirmed',
+    createdAt: '2026-05-16T10:30:00Z',
+  },
+  {
+    id: 'BTLX-2026-00486',
+    eventId: AI_BUILDERS_EVENT_ID,
+    name: 'Casey Morgan',
+    email: 'casey.morgan@university.edu',
+    college: 'Coastal Polytechnic',
+    trackPreference: 'track-agentic',
+    teamName: 'SynthWave Labs',
+    status: 'waitlisted',
+    createdAt: '2026-05-22T14:00:00Z',
   },
 ]
 
@@ -386,6 +505,7 @@ export interface OrganizerStats {
   submissionsDraft: number
   submissionsSubmitted: number
   announcementsCount: number
+  activeJudges: number
 }
 
 export const organizerStats: OrganizerStats = {
@@ -395,4 +515,5 @@ export const organizerStats: OrganizerStats = {
   submissionsDraft: 38,
   submissionsSubmitted: 89,
   announcementsCount: announcements.length,
+  activeJudges: 12,
 }

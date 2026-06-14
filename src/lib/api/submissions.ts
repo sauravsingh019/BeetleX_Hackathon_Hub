@@ -1,9 +1,13 @@
-import type { Submission } from '@/types'
+import type { Submission, SubmissionDetail } from '@/types'
 import { apiClient } from './client'
 
 export type CreateSubmissionInput = Omit<Submission, 'id' | 'updatedAt' | 'submittedAt'>
 
 export type UpdateSubmissionInput = Partial<Omit<Submission, 'id' | 'teamId'>>
+
+export function fetchSubmission(id: string) {
+  return apiClient<SubmissionDetail>(`/api/submissions/${id}`)
+}
 
 export function createSubmission(data: CreateSubmissionInput) {
   return apiClient<Submission>('/api/submissions', {
