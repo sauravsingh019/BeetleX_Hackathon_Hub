@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HolographicCard } from '@/components/ui/animations'
-import { CipherText } from '@/components/ui/CipherText'
 
 export function Landing() {
   return (
