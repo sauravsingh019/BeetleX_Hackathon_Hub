@@ -1,4 +1,5 @@
 # BeetleX Hackathon Hub
+🌐 Live Demo: https://beetle-x-hackathon-hub.vercel.app/
 
 Production-grade SaaS platform for end-to-end hackathon management, designed for Participants, Judges, and Organizers. Built with React, TypeScript, Vite, Zustand, TanStack Query, and MSW, the application delivers a scalable, maintainable, and high-performance frontend architecture with role-based workflows and modern developer experience.
 
